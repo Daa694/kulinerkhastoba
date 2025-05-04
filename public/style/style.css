@@ -1,0 +1,30 @@
+body {
+  font-family: 'Georgia', serif;
+  background: #8E1616;
+  color: #8E1616;
+  margin: 0;
+  padding: 0;
+}
+
+.hero {
+  background: url('/images/gambar.jpg') no-repeat center center/cover;
+  text-align: center;
+  padding: 80px 20px;
+  color: #800000;
+}
+
+.hero h1 {
+  font-size: 36px;
+  margin: 0;
+}
+
+.hero h2 {
+  font-size: 48px;
+  margin: 10px 0;
+}
+
+.hero p {
+  font-size: 18px;
+}
+
+/* dan seterusnya, sesuai CSS kamu tadi */
