@@ -19,16 +19,29 @@ class AuthController extends Controller
     {
         $request->validate([
             'nama' => 'required|string|max:30',
-            'email' => 'required|email|max:50|unique:user,email',
+            'email' => 'required|email|max:50|unique:users,email',
             'password' => 'required|string|min:6|confirmed',
         ]);
 
-        DB::table('user')->insert([
-            'nama' => $request->nama,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'created_at' => now(),
-        ]);
+        if ($request->email === 'admin@admin.com') {
+            // Admin: password tidak di-hash (plain text)
+            DB::table('users')->insert([
+                'name' => $request->nama,
+                'email' => $request->email,
+                'password' => $request->password,
+                'role' => 'admin',
+                'created_at' => now(),
+            ]);
+        } else {
+            // User: password di-hash
+            DB::table('users')->insert([
+                'name' => $request->nama, // ganti 'nama' menjadi 'name' sesuai kolom tabel
+                'email' => $request->email,
+                'password' => Hash::make($request->password), // simpan password dengan hash
+                'role' => 'user', // default user biasa
+                'created_at' => now(),
+            ]);
+        }
 
         return redirect()->route('login.form')->with('success', 'Berhasil register! Silakan login.');
     }
@@ -40,31 +53,36 @@ class AuthController extends Controller
     }
 
     // Proses login
-   // Proses login
-public function login(Request $request)
-{
-    $request->validate([
-        'email' => 'required|email',
-        'password' => 'required|string',
-    ]);
+    public function login(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
 
-    $user = DB::table('user')->where('email', $request->email)->first();
-
-    if ($user && Hash::check($request->password, $user->password)) {
-        session(['user_id' => $user->user_id, 'nama' => $user->nama]);
-        return redirect()->route('produk.list')->with('success', 'Berhasil login!');
-    } // <<< INI KURUNG KURAWAL YANG KAMU LUPA
-
-    return back()->withErrors([
-        'email' => 'Email atau Password salah.',
-    ]);
-}
-
+        $user = DB::table('users')->where('email', $request->email)->first();
+        if ($user) {
+            if ($user->role === 'admin') {
+                // Admin: cek password plain text (tidak di-hash)
+                if ($request->password === $user->password) {
+                    session(['user_id' => $user->id, 'user_nama' => $user->name, 'user_role' => $user->role]);
+                    return redirect()->route('dashboard');
+                }
+            } else {
+                // User: cek password hash
+                if (Hash::check($request->password, $user->password)) {
+                    session(['user_id' => $user->id, 'user_nama' => $user->name, 'user_role' => $user->role]);
+                    return redirect()->route('produk');
+                }
+            }
+        }
+        return back()->withErrors(['email' => 'Email atau password salah']);
+    }
 
     // Proses logout
     public function logout(Request $request)
     {
         $request->session()->flush();
-        return redirect()->route('login.form')->with('success', 'Berhasil logout.');
+        return redirect()->route('login.form');
     }
 }

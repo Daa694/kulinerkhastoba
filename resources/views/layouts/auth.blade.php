@@ -7,7 +7,7 @@
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <style>
     body {
-      background: url('/storage/corak-batak.jpg') no-repeat center center;
+      background: url('{{ asset('storage/corak-batak.jpg') }}') no-repeat center center;
       background-size: cover;
       background-attachment: fixed;
     }
@@ -27,7 +27,7 @@
 <body class="min-h-screen flex items-center justify-center">
   <div class="w-full max-w-md p-8 space-y-6 bg-white/90 backdrop-blur-md rounded-lg shadow-lg">
   <div class="flex justify-center">
-  <img src="images/tobataste.png" alt="Toba Taste Logo" class="w-20 mb-4 animate-spin-slow">
+  <img src="{{ asset('images/tobataste.png') }}" alt="Toba Taste Logo" class="w-20 mb-4 animate-spin-slow">
 </div>
 
 

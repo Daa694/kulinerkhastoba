@@ -4,11 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-class aboutController extends Controller
+class AboutController extends Controller
 {
     public function index()
     {
-        return view('about'); // Menampilkan file resources/views/about.blade.php
+        return view('about');
     }
 }
-

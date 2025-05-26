@@ -8,7 +8,7 @@ class MenuController extends Controller
 {
     public function index()
     {
-        return view('menu'); // Menampilkan file resources/views/menu.blade.php
+        $kuliners = \App\Models\Kuliner::all();
+        return view('menu', compact('kuliners'));
     }
 }
-

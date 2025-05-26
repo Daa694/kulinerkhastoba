@@ -8,6 +8,6 @@ class CardController extends Controller
 {
     public function cart()
     {
-        return view('card'); // atau cart, tergantung file view-nya
+        return view('card');
     }
 }
