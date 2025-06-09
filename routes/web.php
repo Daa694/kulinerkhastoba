@@ -5,7 +5,6 @@ use App\Http\Controllers\MenuController;
 use App\Http\Controllers\AboutController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\CardController;
-use App\Http\Controllers\ArsikDetailController;
 use App\Http\Controllers\ProfilController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AuthController;
@@ -58,4 +57,10 @@ Route::get('/produk/{kuliner}', [KulinerController::class, 'show'])->name('produ
 // Rating produk (user)
 Route::post('/produk/{kuliner}/rating', [KulinerController::class, 'beriRating'])->name('produk.rating');
 // Tambah ke keranjang (user)
-Route::post('/produk/{kuliner}/keranjang', [KulinerController::class, 'tambahKeranjang'])->name('produk.keranjang');
+Route::post('/produk/{kuliner}/card', [KulinerController::class, 'tambahKeranjang'])->name('produk.keranjang');
+// Detail produk/menu
+Route::get('/produk/{kuliner}', [KulinerController::class, 'show'])->name('produk.detail');
+// Form beri rating (harus login)
+Route::post('/produk/{kuliner}/rating', [KulinerController::class, 'beriRating'])
+    ->middleware('auth')
+    ->name('produk.rating');

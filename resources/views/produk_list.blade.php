@@ -15,7 +15,7 @@
                     <p class="mb-2">Rating: {{ $kuliner->rating }} / 5</p>
                 @endif
                 <div class="mt-auto flex flex-col gap-2">
-                    <a href="#" class="border border-[#D8532B] text-[#D8532B] px-4 py-2 rounded text-center hover:bg-orange-100 transition">Detail</a>
+                    <a href="{{ route('produk.detail', $kuliner->id) }}" class="border border-[#D8532B] text-[#D8532B] px-3 py-1 rounded text-sm hover:bg-orange-100 inline-block">Detail</a>
                     <button class="bg-[#D8532B] text-white px-4 py-2 rounded hover:bg-[#c24623] transition">Beli</button>
                 </div>
             </div>
