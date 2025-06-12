@@ -1,66 +1,127 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\MenuController;
-use App\Http\Controllers\AboutController;
-use App\Http\Controllers\ContactController;
-use App\Http\Controllers\CardController;
-use App\Http\Controllers\ProfilController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\KulinerController;
+use App\Http\Controllers\{
+    MenuController,
+    AboutController,
+    ContactController,
+    CartController,
+    ProfilController,
+    AuthController,
+    KulinerController,
+    OrderController,
+    RatingController,
+    ProdukController
+};
+use App\Http\Controllers\Admin\{
+    AdminAuthController,
+    DashboardController,
+    KulinerController as AdminKulinerController
+};
 
-// Halaman produk (ambil data dari database via controller)
-Route::get('/produk', [KulinerController::class, 'index'])->name('produk');
+// Public Routes
+Route::get('/', function () {
+    return view('welcome');
+});
 
-// Auth
-Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register.form');
-Route::post('/register', [AuthController::class, 'register'])->name('register');
-Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login.form');
-Route::post('/login', [AuthController::class, 'login'])->name('login');
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+// Menu Routes
+Route::get('/menu', [MenuController::class, 'index'])->name('menu');
+Route::get('/menu/{kuliner}', [MenuController::class, 'show'])->name('menu.detail');
+Route::get('/rekomendasi', [ProdukController::class, 'rekomendasi'])->name('rekomendasi');
 
-// Dashboard (hanya admin)
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('admin');
-
-// Halaman profil
-Route::get('/profil', [ProfilController::class, 'index'])->name('profil');
-Route::post('/profil/update-alamat', [ProfilController::class, 'updateAlamat'])->name('profil.updateAlamat');
-
-// Detail Arsik
-Route::get('/menu/arsik-ikan-mas', [ArsikDetailController::class, 'show'])->name('arsik.detail');
-
-// Keranjang
-Route::get('/card', [CardController::class, 'cart'])->name('kuliner.cart');
-
-// Halaman kontak
-Route::get('/contact', [ContactController::class, 'index'])->name('contact');
-
-// Halaman tentang kami
+// About Route
 Route::get('/about', [AboutController::class, 'index'])->name('about');
 
-// Halaman menu
-Route::get('/menu', [MenuController::class, 'index'])->name('menu');
+// Contact Route
+Route::get('/contact', [ContactController::class, 'index'])->name('contact');
 
-// Halaman welcome (opsional)
-Route::get('/welcome', function () {
-    return view('welcome');
-})->name('welcome');
+// Redirect /home to root URL
+Route::get('/home', function () {
+    return redirect('/');
+})->name('home');
 
-// Resource kuliner: hanya admin yang bisa CRUD, user hanya bisa melihat (index)
-Route::resource('kuliner', KulinerController::class)->except(['index'])->middleware('admin');
-// Route index tetap bisa diakses semua user
-Route::get('kuliner', [KulinerController::class, 'index'])->name('kuliner.index');
+// Guest Routes
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->name('login');
+    Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register.form');
+    Route::post('/register', [AuthController::class, 'register'])->name('register');
+});
 
-// Detail produk (bisa diakses user)
-Route::get('/produk/{kuliner}', [KulinerController::class, 'show'])->name('produk.detail');
-// Rating produk (user)
-Route::post('/produk/{kuliner}/rating', [KulinerController::class, 'beriRating'])->name('produk.rating');
-// Tambah ke keranjang (user)
-Route::post('/produk/{kuliner}/card', [KulinerController::class, 'tambahKeranjang'])->name('produk.keranjang');
-// Detail produk/menu
-Route::get('/produk/{kuliner}', [KulinerController::class, 'show'])->name('produk.detail');
-// Form beri rating (harus login)
-Route::post('/produk/{kuliner}/rating', [KulinerController::class, 'beriRating'])
-    ->middleware('auth')
-    ->name('produk.rating');
+// Authenticated User Routes
+Route::middleware('auth')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    
+    // Profile
+    Route::prefix('profil')->group(function () {
+        Route::get('/', [ProfilController::class, 'index'])->name('profil.index');
+        Route::post('/update-alamat', [ProfilController::class, 'updateAlamat'])->name('profil.updateAlamat');
+    });
+    
+    // Cart
+    Route::prefix('cart')->group(function () {
+        Route::get('/', [CartController::class, 'index'])->name('cart.index');
+        Route::post('/add', [CartController::class, 'add'])->name('cart.add');
+        Route::put('/update', [CartController::class, 'update'])->name('cart.update');
+        Route::delete('/{id}', [CartController::class, 'remove'])->name('cart.remove');
+        Route::post('/clear', [CartController::class, 'clear'])->name('cart.clear');
+    });
+
+    Route::prefix('cart')->name('cart.')->group(function () {
+        Route::get('/', [CartController::class, 'index'])->name('index');
+        Route::post('/add', [CartController::class, 'add'])->name('add');
+        Route::put('/update', [CartController::class, 'update'])->name('update');
+        Route::post('/ajax-update', [CartController::class, 'ajaxUpdate'])->name('ajax-update');
+        Route::delete('/remove/{kuliner}', [CartController::class, 'remove'])->name('remove');
+    });
+    
+    // Orders
+    Route::prefix('orders')->group(function () {
+        Route::get('/', [OrderController::class, 'index'])->name('orders.index');
+        Route::post('/', [OrderController::class, 'store'])->name('orders.store');
+        Route::post('/place', [OrderController::class, 'place'])->name('orders.place');
+        Route::post('/notification', [OrderController::class, 'notification'])->name('orders.notification');
+        Route::get('/{order}', [OrderController::class, 'show'])->name('orders.show');
+    });
+
+    Route::prefix('order')->name('order.')->group(function () {
+        Route::post('/place', [OrderController::class, 'place'])->name('place');
+        Route::get('/history', [OrderController::class, 'history'])->name('history');
+        Route::get('/{order}', [OrderController::class, 'show'])->name('show');
+    });
+    
+    // Ratings
+    Route::prefix('rating')->group(function () {
+        Route::post('/{kuliner}', [RatingController::class, 'store'])->name('rating.store');
+        Route::put('/{rating}', [RatingController::class, 'update'])->name('rating.update');
+        Route::delete('/{rating}', [RatingController::class, 'destroy'])->name('rating.destroy');
+    });
+});
+
+// Admin Authentication Routes (Guest Only)
+Route::middleware('guest')->prefix('admin')->group(function () {
+    Route::get('/login', [AdminAuthController::class, 'showLoginForm'])->name('admin.login');
+    Route::post('/login', [AdminAuthController::class, 'login']);
+});
+
+// Protected Admin Routes
+Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
+    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+    
+    // Kuliner Management
+    Route::resource('kuliner', \App\Http\Controllers\Admin\KulinerController::class)->names([
+        'index' => 'admin.kuliner.index',
+        'create' => 'admin.kuliner.create',
+        'store' => 'admin.kuliner.store',
+        'edit' => 'admin.kuliner.edit',
+        'update' => 'admin.kuliner.update',
+        'destroy' => 'admin.kuliner.destroy'
+    ]);
+    
+    // Order Management
+    Route::prefix('orders')->group(function () {
+        Route::get('/', [OrderController::class, 'adminIndex'])->name('admin.orders.index');
+        Route::put('/{order}/status', [OrderController::class, 'updateStatus'])->name('admin.orders.status');
+    });
+});

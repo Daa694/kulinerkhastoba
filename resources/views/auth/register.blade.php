@@ -1,58 +1,66 @@
-@extends('layouts.auth')
-
-@section('title', 'Register')
+@extends('layouts.app')
 
 @section('content')
-    <!-- Selamat Datang Section -->
-    <div class="text-center mb-8">
-        <h1 class="text-3xl font-extrabold text-gray-800">Buat Akun Baru</h1>
-        <p class="mt-2 text-gray-600">Gabung dan nikmati berbagai kuliner khas Toba!</p>
-    </div>
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md">
+        <div class="text-center mb-6">
+            <h2 class="text-2xl font-bold text-[#2E5A43]">Daftar Akun</h2>
+        </div>
 
-    <!-- Form Register Section -->
-    <div class="bg-white p-6 rounded-lg shadow-md">
-        <h2 class="text-2xl font-bold mb-6 text-center text-green-700">Register</h2>
-
-        @if ($errors->any())
-            <div class="bg-red-100 text-red-700 p-3 rounded mb-4">
-                <ul class="list-disc list-inside">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
-        <form action="{{ route('register') }}" method="POST" class="space-y-4">
+        <form method="POST" action="{{ route('register') }}" class="space-y-4">
             @csrf
+            
             <div>
-                <label class="block mb-1 font-semibold text-gray-700">Nama</label>
-                <input type="text" name="nama" class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-400" value="{{ old('nama') }}" required>
+                <label for="name" class="block text-gray-700 mb-2">Nama</label>
+                <input type="text" name="name" id="name" value="{{ old('name') }}"
+                    class="w-full border rounded px-3 py-2 @error('name') border-red-500 @enderror" required>
+                @error('name')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <div>
-                <label class="block mb-1 font-semibold text-gray-700">Email</label>
-                <input type="email" name="email" class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-400" value="{{ old('email') }}" required>
+                <label for="email" class="block text-gray-700 mb-2">Email</label>
+                <input type="email" name="email" id="email" value="{{ old('email') }}"
+                    class="w-full border rounded px-3 py-2 @error('email') border-red-500 @enderror" required>
+                @error('email')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <div>
-                <label class="block mb-1 font-semibold text-gray-700">Password</label>
-                <input type="password" name="password" class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-400" required>
+                <label for="alamat_pengiriman" class="block text-gray-700 mb-2">Alamat Pengiriman</label>
+                <textarea name="alamat_pengiriman" id="alamat_pengiriman" rows="3" 
+                    class="w-full border rounded px-3 py-2 @error('alamat_pengiriman') border-red-500 @enderror" required>{{ old('alamat_pengiriman') }}</textarea>
+                @error('alamat_pengiriman')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <div>
-                <label class="block mb-1 font-semibold text-gray-700">Konfirmasi Password</label>
-                <input type="password" name="password_confirmation" class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-400" required>
+                <label for="password" class="block text-gray-700 mb-2">Password</label>
+                <input type="password" name="password" id="password"
+                    class="w-full border rounded px-3 py-2 @error('password') border-red-500 @enderror" required>
+                @error('password')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
-            <button type="submit" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition duration-200">
-                Register
+            <div>
+                <label for="password_confirmation" class="block text-gray-700 mb-2">Konfirmasi Password</label>
+                <input type="password" name="password_confirmation" id="password_confirmation"
+                    class="w-full border rounded px-3 py-2" required>
+            </div>
+
+            <button type="submit" class="w-full bg-[#2E5A43] text-white py-2 px-4 rounded hover:bg-[#244934]">
+                Daftar
             </button>
         </form>
 
-        <p class="mt-4 text-center text-sm text-gray-600">
-            Sudah punya akun?
-            <a href="{{ route('login.form') }}" class="text-green-600 hover:underline">Login Sekarang</a>
+        <p class="text-center mt-4 text-gray-600">
+            Sudah punya akun? 
+            <a href="{{ route('login') }}" class="text-[#2E5A43] hover:underline">Login</a>
         </p>
     </div>
+</div>
 @endsection

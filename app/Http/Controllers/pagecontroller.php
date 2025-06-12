@@ -36,22 +36,28 @@ class PageController extends Controller
     {
         $kuliners = Kuliner::all();
         return view('menu', compact('kuliners'));
+    }    public function produk()
+    {        $recommendedProducts = Kuliner::with(['ratings'])
+            ->withAvg('ratings', 'rating')
+            ->having('ratings_avg_rating', '>=', 4)
+            ->orWhereNull('ratings_avg_rating')
+            ->orderByDesc('ratings_avg_rating')
+            ->paginate(12);
+        return view('produk_list', compact('recommendedProducts'));
     }
 
-    public function produk()
+    public function produkDetail($id)
     {
-        $kuliners = Kuliner::all();
-        return view('produk_list', compact('kuliners'));
+        $product = Kuliner::findOrFail($id);
+        return view('produk.detail', compact('product'));
     }
 
     public function keranjang()
     {
         return view('keranjang');
-    }
-
-    public function card()
+    }    public function cart()
     {
-        return view('card');
+        return view('cart');
     }
 
     public function detail()

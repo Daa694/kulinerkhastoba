@@ -3,57 +3,45 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+use App\Models\Order;
 
 class ProfilController extends Controller
 {
-    // Method untuk menampilkan profil pengguna
-    public function index(Request $request)
+    public function __construct()
     {
-        // Ambil user_id dari session
-        $userId = session('user_id');
+        $this->middleware('auth');
+    }
 
-        // Ambil data user dari tabel 'users'
-        // Pastikan untuk memilih field 'alamat_pengiriman' agar ada pada hasil query
-        $user = DB::table('users')
-            ->select('id', 'name', 'alamat_pengiriman') // gunakan 'name' bukan 'nama'
-            ->where('id', $userId)
-            ->first();
-
-        // Gunakan helper optional() agar jika $user null atau properti tidak tersedia, tidak terjadi error
-        $alamat = optional($user)->alamat_pengiriman ?? '';
-        $nama = optional($user)->name ?? '';
-
-        // Ambil data pesanan berdasarkan user_id
-        $pesanan = DB::table('orders')
-            ->where('user_id', $userId)
+    public function index()
+    {
+        $user = Auth::user();
+        
+        $pesanan = Order::where('user_id', $user->id)
+            ->with('orderItems.kuliner')
+            ->latest()
             ->get();
 
-        // Ambil data keranjang user yang belum checkout
-        $keranjang = DB::table('carts')
-            ->join('kuliners', 'carts.kuliner_id', '=', 'kuliners.id')
-            ->select('carts.*', 'kuliners.nama', 'kuliners.harga')
-            ->where('carts.user_id', $userId)
-            ->where('carts.is_checked_out', false)
-            ->get();
-
-        // Kembalikan data ke view 'profil'
-        return view('profil', compact('alamat', 'pesanan', 'nama', 'keranjang'));
+        return view('profil', [
+            'user' => $user,
+            'pesanan' => $pesanan,
+            'alamat' => $user->alamat_pengiriman
+        ]);
     }
     
-    // Method untuk memperbarui alamat pengiriman pengguna
     public function updateAlamat(Request $request)
     {
-        $userId = session('user_id');
+        $request->validate([
+            'alamat_pengiriman' => 'required|string|max:255'
+        ]);
 
-        // Update kolom 'alamat_pengiriman' untuk user tertentu dengan data dari input form
-        DB::table('users')
-            ->where('id', $userId)
-            ->update([
-                'alamat_pengiriman' => $request->input('alamat_pengiriman') // ambil input secara eksplisit
-            ]);
+        $user = Auth::user();
+        $user->alamat_pengiriman = $request->alamat_pengiriman;
+        $user->save();
 
-        // Redirect kembali ke halaman profil dengan pesan sukses
-        return redirect()->route('profil')->with('success', 'Alamat pengiriman berhasil diperbarui!');
+        return redirect()
+            ->route('profil.index')
+            ->with('success', 'Alamat pengiriman berhasil diperbarui');
     }
 }

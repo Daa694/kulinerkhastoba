@@ -5,3 +5,8 @@
         Hapus Kuliner
     </button>
 </form>
+Kuliner::create([
+    'nama' => 'Nasi Goreng',
+    'harga' => 15000,
+    'detail' => 'Nasi goreng dengan telur dan ayam.',
+]);

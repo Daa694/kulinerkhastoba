@@ -4,69 +4,75 @@ namespace App\Http\Controllers;
 
 use App\Models\Kuliner;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class KulinerController extends Controller
 {
-    // Daftar produk/menu
-    public function index(Request $request)
+    public function __construct()
     {
-        $query = Kuliner::query();
-        if ($request->has('q') && $request->q) {
-            $query->where('nama', 'like', '%' . $request->q . '%');
-        }
-        $kuliners = $query->get();
-        return view('produk_list', compact('kuliners'));
+        $this->middleware('auth');
+        $this->middleware('admin')->only(['create', 'store', 'edit', 'update', 'destroy']);
     }
 
-    // Detail produk/menu
-    public function show(Kuliner $kuliner)
+    public function index()
     {
-        // Jika ingin menampilkan rating, pastikan relasi sudah ada
-        // $kuliner->loadAvg('ratings', 'rating');
-        // $kuliner->ratings_count = $kuliner->ratings()->count();
-
-        return view('detail', compact('kuliner'));
+        $kuliners = Kuliner::withAvg('ratings', 'rating')->get();
+        return view('kuliner.index', compact('kuliners'));
     }
 
-    // Tambah ke keranjang (contoh, harus login)
-    public function tambahKeranjang(Request $request, Kuliner $kuliner)
+    public function create()
     {
-        // HARUS pakai Auth::id() untuk deteksi login Laravel
-        if (!auth()->check()) {
-            return redirect()->route('login.form')->with('error', 'Silakan login terlebih dahulu!');
-        }
-        $userId = auth()->id();
-
-        $jumlah = $request->input('jumlah', 1);
-        $cart = \App\Models\Cart::where('user_id', $userId)
-            ->where('kuliner_id', $kuliner->id)
-            ->where('is_checked_out', false)
-            ->first();
-        if ($cart) {
-            $cart->jumlah += $jumlah;
-            $cart->save();
-        } else {
-            \App\Models\Cart::create([
-                'user_id' => $userId,
-                'kuliner_id' => $kuliner->id,
-                'jumlah' => $jumlah,
-                'is_checked_out' => false
-            ]);
-        }
-        return redirect()->route('profil')->with('success', 'Produk berhasil dimasukkan ke keranjang!');
+        return view('kuliner.create');
     }
 
-    // Contoh jika ingin fitur rating produk
-    public function beriRating(Request $request, Kuliner $kuliner)
+    public function store(Request $request)
     {
-        $request->validate([
-            'rating' => 'required|integer|min:1|max:5',
+        $validated = $request->validate([
+            'nama' => 'required|string|max:255',
+            'deskripsi' => 'required|string',
+            'harga' => 'required|numeric',
+            'gambar' => 'required|image|mimes:jpeg,png,jpg|max:2048'
         ]);
-        // Misal relasi: $kuliner->ratings() -> Model Rating harus dibuat, dan ada kolom user_id, kuliner_id, rating
-        $kuliner->ratings()->updateOrCreate(
-            ['user_id' => auth()->id()],
-            ['rating' => $request->rating]
-        );
-        return back()->with('success', 'Rating berhasil disimpan!');
+
+        $gambarPath = $request->file('gambar')->store('kuliners', 'public');
+
+        Kuliner::create([
+            'nama' => $validated['nama'],
+            'deskripsi' => $validated['deskripsi'],
+            'harga' => $validated['harga'],
+            'gambar' => $gambarPath
+        ]);
+
+        return redirect()->route('admin.kuliner.index')->with('success', 'Menu berhasil ditambahkan');
+    }
+
+    public function edit(Kuliner $kuliner)
+    {
+        return view('kuliner.edit', compact('kuliner'));
+    }
+
+    public function update(Request $request, Kuliner $kuliner)
+    {
+        $validated = $request->validate([
+            'nama' => 'required|string|max:255',
+            'deskripsi' => 'required|string',
+            'harga' => 'required|numeric',
+            'gambar' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
+        ]);
+
+        if ($request->hasFile('gambar')) {
+            Storage::disk('public')->delete($kuliner->gambar);
+            $validated['gambar'] = $request->file('gambar')->store('kuliners', 'public');
+        }
+
+        $kuliner->update($validated);
+        return redirect()->route('admin.kuliner.index')->with('success', 'Menu berhasil diperbarui');
+    }
+
+    public function destroy(Kuliner $kuliner)
+    {
+        Storage::disk('public')->delete($kuliner->gambar);
+        $kuliner->delete();
+        return redirect()->route('admin.kuliner.index')->with('success', 'Menu berhasil dihapus');
     }
 }
