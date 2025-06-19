@@ -78,11 +78,12 @@ class KulinerController extends Controller
 
     public function rekomendasi()
     {
-        $rekomendasi = Kuliner::where('tersedia', true)
+        $kuliners = Kuliner::with(['ratings'])
+            ->withAvg('ratings', 'rating')
+            ->where('tersedia', true)
             ->orderBy('stok', 'desc')
-            ->take(6)
+            ->take(10)
             ->get();
-            
-        return view('kuliner.rekomendasi', compact('rekomendasi'));
+        return view('kuliner.rekomendasi', compact('kuliners'));
     }
 }
