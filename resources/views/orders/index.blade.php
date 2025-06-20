@@ -57,6 +57,12 @@
                         </div>
                         <div class="text-right">
                             <p class="text-[#D2552D] font-bold">Rp {{ number_format($order->total, 0, ',', '.') }}</p>
+                            @if($order->payment_status == 'settlement' || $order->payment_status == 'capture')
+                                <a href="{{ route('orders.receipt', ['orderId' => $order->order_id]) }}" target="_blank"
+                                   class="mt-2 inline-block bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-300">
+                                    <i class="fas fa-receipt mr-2"></i>Lihat Struk
+                                </a>
+                            @endif
                         </div>
                     </div>
 
