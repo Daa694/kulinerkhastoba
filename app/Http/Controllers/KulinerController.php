@@ -75,4 +75,15 @@ class KulinerController extends Controller
         $kuliner->delete();
         return redirect()->route('admin.kuliner.index')->with('success', 'Menu berhasil dihapus');
     }
+
+    public function rekomendasi()
+    {
+        $kuliners = Kuliner::with(['ratings'])
+            ->withAvg('ratings', 'rating')
+            ->where('tersedia', true)
+            ->orderBy('stok', 'desc')
+            ->take(10)
+            ->get();
+        return view('kuliner.rekomendasi', compact('kuliners'));
+    }
 }

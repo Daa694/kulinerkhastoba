@@ -74,7 +74,7 @@
                         </span>
                     </div>
                     <!-- Top Rated Menu Image -->
-                    <img src="{{ asset('storage/'.$topRatedKuliner->gambar) }}" 
+                    <img src="{{ Storage::url($topRatedKuliner->gambar) }}" 
                          alt="{{ $topRatedKuliner->nama }}" 
                          class="w-full h-48 object-cover rounded-xl mb-4">
                     <!-- Menu Details -->
@@ -195,9 +195,10 @@
                                     <span>Tambah</span>
                                 </button>
                             </form>
-                             <a href="{{ route('menu.detail', $kuliner) }}"
-                               class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors duration-300">
-                                <i class="fas fa-info-circle"></i>
+                            <a href="{{ route('menu.detail', $kuliner) }}"
+                               class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transform hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                <span>Detail</span>
                             </a>
                         </div>
                         

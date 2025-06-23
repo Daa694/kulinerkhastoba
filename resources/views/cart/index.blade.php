@@ -3,7 +3,13 @@
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-3xl mx-auto">
-        <h1 class="text-2xl font-bold text-[#2E5A43] mb-6">Keranjang Belanja</h1>
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-[#2E5A43]">Keranjang Belanja</h1>
+            <a href="{{ route('menu') }}" class="inline-flex items-center px-4 py-2 bg-[#2E5A43] text-white rounded-lg hover:bg-[#234434] transition-colors duration-300">
+                <i class="fas fa-utensils mr-2"></i>
+                <span>Lanjut Belanja</span>
+            </a>
+        </div>
 
         @if(session('success'))
             <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
@@ -88,11 +94,15 @@
                 </div>
             </div>
         @else
-            <div class="text-center py-8 bg-white rounded-lg shadow-md">
-                <p class="text-gray-500 mb-4">Keranjang belanja kosong</p>
+            <div class="bg-white rounded-lg shadow-md p-8 text-center">
+                <div class="text-gray-500 mb-4">
+                    <i class="fas fa-shopping-cart text-4xl mb-4"></i>
+                    <p class="text-xl">Keranjang belanja Anda kosong</p>
+                </div>
                 <a href="{{ route('menu') }}" 
-                   class="bg-[#2E5A43] text-white px-6 py-2 rounded hover:bg-[#244934] transition duration-200">
-                    Mulai Belanja
+                   class="inline-flex items-center px-6 py-3 bg-[#2E5A43] text-white rounded-lg hover:bg-[#234434] transition-colors duration-300">
+                    <i class="fas fa-utensils mr-2"></i>
+                    <span>Mulai Belanja</span>
                 </a>
             </div>
         @endif
@@ -101,7 +111,7 @@
 @endsection
 
 @push('scripts')
-<script type="text/javascript" src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('services.midtrans.client_key') }}"></script>
+<script type="text/javascript" src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="SB-Mid-client-llJS8ZDaKY7O2Nm3"></script>
 
 <script>
 function formatRupiah(amount) {
@@ -177,38 +187,75 @@ function removeItem(cartId) {
 }
 
 function placeOrder() {
-    fetch('{{ route('order.place') }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            snap.pay(data.snap_token, {
+        fetch('{{ route('order.place') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {            snap.pay(data.snap_token, {
                 onSuccess: function(result) {
-                    window.location.href = '{{ route('orders.index') }}';
+                    console.log('Payment success:', result);
+                    // Redirect to finish URL from Midtrans
+                    window.location.href = result.finish_redirect_url;
                 },
                 onPending: function(result) {
-                    window.location.href = '{{ route('orders.index') }}';
+                    console.log('Payment pending:', result);
+                    window.location.href = result.finish_redirect_url;
                 },
                 onError: function(result) {
+                    console.log('Payment error:', result);
                     alert('Pembayaran gagal');
+                    window.location.href = '{{ route('orders.index') }}';
                 },
                 onClose: function() {
+                    console.log('Payment widget closed');
                     alert('Anda menutup popup pembayaran sebelum menyelesaikan pembayaran');
                 }
+                });
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Gagal membuat pesanan');
+        });
+    }
+
+    function checkPaymentStatus(orderId) {
+        // Poll for payment status and receipt URL
+        let attempts = 0;
+        const maxAttempts = 10;
+        const interval = setInterval(() => {
+            if (attempts >= maxAttempts) {
+                clearInterval(interval);
+                window.location.href = '{{ route('orders.index') }}';
+                return;
+            }
+            
+            fetch(`/orders/${orderId}/check-status`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.receipt_url) {
+                    clearInterval(interval);
+                    // Open receipt in new window
+                    window.open(data.receipt_url, '_blank');
+                    // Redirect to orders page
+                    window.location.href = '{{ route('orders.index') }}';
+                }
             });
-        } else {
-            alert(data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Gagal membuat pesanan');
-    });
-}
+            
+            attempts++;
+        }, 2000); // Check every 2 seconds
+    }
 </script>
 @endpush

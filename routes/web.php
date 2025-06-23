@@ -10,13 +10,13 @@ use App\Http\Controllers\{
     AuthController,
     KulinerController,
     OrderController,
-    RatingController,
-    ProdukController
+    RatingController
 };
 use App\Http\Controllers\Admin\{
     AdminAuthController,
     DashboardController,
-    KulinerController as AdminKulinerController
+    KulinerController as AdminKulinerController,
+    OrderController as AdminOrderController
 };
 
 // Public Routes
@@ -27,7 +27,7 @@ Route::get('/', function () {
 // Menu Routes
 Route::get('/menu', [MenuController::class, 'index'])->name('menu');
 Route::get('/menu/{kuliner}', [MenuController::class, 'show'])->name('menu.detail');
-Route::get('/rekomendasi', [ProdukController::class, 'rekomendasi'])->name('rekomendasi');
+Route::get('/rekomendasi', [KulinerController::class, 'rekomendasi'])->name('rekomendasi');
 
 // About Route
 Route::get('/about', [AboutController::class, 'index'])->name('about');
@@ -82,6 +82,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/place', [OrderController::class, 'place'])->name('orders.place');
         Route::post('/notification', [OrderController::class, 'notification'])->name('orders.notification');
         Route::get('/{order}', [OrderController::class, 'show'])->name('orders.show');
+        Route::post('/{order}/confirm', [OrderController::class, 'confirmReceived'])->name('orders.confirm');
+        
     });
 
     Route::prefix('order')->name('order.')->group(function () {
@@ -98,6 +100,13 @@ Route::middleware('auth')->group(function () {
     });
 });
 
+// Midtrans Routes
+Route::post('/payment/notification', [OrderController::class, 'notification'])->name('payment.notification');
+Route::get('/payment/finish', [OrderController::class, 'finish'])->name('payment.finish');
+Route::get('/payment/unfinish', [OrderController::class, 'unfinish'])->name('payment.unfinish');
+Route::get('/payment/error', [OrderController::class, 'error'])->name('payment.error');
+Route::get('/orders/{orderId}/receipt', [OrderController::class, 'showReceipt'])->name('orders.receipt');
+
 // Admin Authentication Routes (Guest Only)
 Route::middleware('guest')->prefix('admin')->group(function () {
     Route::get('/login', [AdminAuthController::class, 'showLoginForm'])->name('admin.login');
@@ -105,23 +114,17 @@ Route::middleware('guest')->prefix('admin')->group(function () {
 });
 
 // Protected Admin Routes
-Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
-    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
     // Kuliner Management
-    Route::resource('kuliner', \App\Http\Controllers\Admin\KulinerController::class)->names([
-        'index' => 'admin.kuliner.index',
-        'create' => 'admin.kuliner.create',
-        'store' => 'admin.kuliner.store',
-        'edit' => 'admin.kuliner.edit',
-        'update' => 'admin.kuliner.update',
-        'destroy' => 'admin.kuliner.destroy'
-    ]);
+    Route::resource('kuliner', AdminKulinerController::class);
     
     // Order Management
-    Route::prefix('orders')->group(function () {
-        Route::get('/', [OrderController::class, 'adminIndex'])->name('admin.orders.index');
-        Route::put('/{order}/status', [OrderController::class, 'updateStatus'])->name('admin.orders.status');
+    Route::prefix('orders')->name('orders.')->group(function () {
+        Route::get('/', [AdminOrderController::class, 'index'])->name('index');
+        Route::get('/{order}', [AdminOrderController::class, 'show'])->name('show');
+        Route::patch('/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('updateStatus');
     });
 });

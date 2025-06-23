@@ -36,6 +36,9 @@ return [
         'client_key' => env('MIDTRANS_CLIENT_KEY'),
         'is_production' => env('MIDTRANS_IS_PRODUCTION', false),
         'merchant_id' => env('MIDTRANS_MERCHANT_ID'),
+        'finish_url' => env('APP_URL') . '/payment/finish',
+        'unfinish_url' => env('APP_URL') . '/payment/unfinish',
+        'error_url' => env('APP_URL') . '/payment/error',
     ],
 
 ];

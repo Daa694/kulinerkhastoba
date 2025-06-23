@@ -13,17 +13,22 @@ class DashboardController extends Controller
     public function __construct()
     {
         $this->middleware(['auth', 'admin']);
-    }
-
-    public function index()
+    }    public function index()
     {
         try {
+            // Get recent orders with user information
+            $recentOrders = Order::with(['user'])
+                                ->orderBy('created_at', 'desc')
+                                ->take(10)
+                                ->get();
+
             $data = [
                 'totalKuliners' => $this->getTotalKuliners(),
                 'totalOrders' => $this->getTotalOrders(),
                 'totalUsers' => $this->getTotalUsers(),
                 'popularKuliners' => $this->getPopularKuliners(),
-                'recentOrders' => $this->getRecentOrders()
+                'recentOrders' => $recentOrders,
+                'monthlySales' => $this->getMonthlySales()
             ];
 
             return view('admin.dashboard', $data);
@@ -85,4 +90,32 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
     }
+    protected function getMonthlySales()
+    {
+        $monthlySales = DB::table('orders')
+            ->select(
+                DB::raw('YEAR(created_at) as year'),
+                DB::raw('MONTH(created_at) as month'),
+                DB::raw('SUM(total) as total_sales'),
+                DB::raw('COUNT(*) as total_orders')
+            )
+            ->where('payment_status', 'settlement')
+            ->orWhere('payment_status', 'capture')
+            ->groupBy('year', 'month')
+            ->orderBy('year', 'desc')
+            ->orderBy('month', 'desc')
+            ->get()
+            ->map(function ($item) {
+                $monthName = date('F', mktime(0, 0, 0, $item->month, 1));
+                return [
+                    'period' => $monthName . ' ' . $item->year,
+                    'total_sales' => $item->total_sales,
+                    'total_orders' => $item->total_orders,
+                    'average_order' => $item->total_orders > 0 ? $item->total_sales / $item->total_orders : 0
+                ];
+            });
+
+        return $monthlySales;
+    }
+
 }
