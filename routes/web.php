@@ -34,6 +34,10 @@ Route::get('/about', [AboutController::class, 'index'])->name('about');
 
 // Contact Route
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/contact/edit', [ContactController::class, 'edit'])->name('contact.edit');
+    Route::put('/contact/update', [ContactController::class, 'update'])->name('contact.update');
+});
 
 // Redirect /home to root URL
 Route::get('/home', function () {

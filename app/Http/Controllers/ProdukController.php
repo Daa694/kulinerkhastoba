@@ -10,7 +10,7 @@ class ProdukController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth')->except(['rekomendasi']);
+        $this->middleware('auth')->except(['rekomendasi', 'showMenu']);
         $this->middleware('admin')->only(['create', 'store', 'edit', 'update', 'destroy']);
     }
 
@@ -35,7 +35,7 @@ class ProdukController extends Controller
         ]);
 
         $data = $request->all();
-        
+
         if ($request->hasFile('gambar')) {
             $gambar = $request->file('gambar');
             $nama_gambar = time() . '.' . $gambar->getClientOriginalExtension();
@@ -86,7 +86,7 @@ class ProdukController extends Controller
     public function destroy($id)
     {
         $produk = Produk::findOrFail($id);
-        
+
         if ($produk->gambar) {
             $path = public_path('images/' . $produk->gambar);
             if (file_exists($path)) {
@@ -101,7 +101,7 @@ class ProdukController extends Controller
     public function rekomendasi()
     {
         $kuliners = Kuliner::where('tersedia', true)
-            ->with(['ratings' => function($query) {
+            ->with(['ratings' => function ($query) {
                 $query->with('user')->latest();
             }])
             ->withAvg('ratings', 'rating')
@@ -111,5 +111,36 @@ class ProdukController extends Controller
             ->get();
 
         return view('rekomendasi', compact('kuliners'));
+    }
+
+    public function showMenu(Request $request)
+    {
+        $query = Kuliner::query()->withAvg('ratings', 'rating');
+
+        // Filter pencarian nama kuliner
+        if ($request->has('search') && $request->search != '') {
+            $query->where('nama', 'LIKE', '%' . $request->search . '%');
+        }
+
+        // Filter pengurutan
+        switch ($request->get('sort')) {
+            case 'harga_asc':
+                $query->orderBy('harga', 'asc');
+                break;
+            case 'harga_desc':
+                $query->orderBy('harga', 'desc');
+                break;
+            case 'rating_desc':
+                $query->orderByDesc('ratings_avg_rating');
+                break;
+            case 'terbaru':
+                $query->orderByDesc('created_at');
+                break;
+        }
+
+        $kuliners = $query->paginate(12);
+        $topRatedKuliner = Kuliner::withAvg('ratings', 'rating')->orderByDesc('ratings_avg_rating')->first();
+
+        return view('produk_list', compact('kuliners', 'topRatedKuliner'));
     }
 }

@@ -16,6 +16,11 @@ class RatingController extends Controller
 
     public function store(Request $request, Kuliner $kuliner)
     {
+        // Admin tidak boleh memberi rating
+        if (Auth::user() && Auth::user()->isAdmin()) {
+            return redirect()->back()->with('error', 'Admin tidak dapat memberi rating.');
+        }
+
         $validated = $request->validate([
             'rating' => 'required|integer|min:1|max:5',
             'komentar' => 'nullable|string|max:500'
@@ -31,7 +36,6 @@ class RatingController extends Controller
             $existingRating->rating = $validated['rating'];
             $existingRating->komentar = $validated['komentar'];
             $existingRating->save();
-            
             $message = 'Rating berhasil diperbarui!';
         } else {
             // Create new rating
@@ -41,7 +45,6 @@ class RatingController extends Controller
                 'rating' => $validated['rating'],
                 'komentar' => $validated['komentar']
             ]);
-            
             $message = 'Terima kasih atas penilaian Anda!';
         }
 

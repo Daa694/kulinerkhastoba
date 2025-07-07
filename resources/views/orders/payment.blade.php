@@ -20,7 +20,7 @@
 </div>
 
 @push('scripts')
-<script type="text/javascript" src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="SB-Mid-client-llJS8ZDaKY7O2Nm3"></script>
+<script type="text/javascript" src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
 <script type="text/javascript">
     const payButton = document.querySelector('#pay-button');
     const snapToken = "{{ $snapToken }}";
@@ -28,17 +28,39 @@
     payButton.addEventListener('click', function() {
         window.snap.pay(snapToken, {
             onSuccess: function(result) {
-                window.location.href = '/orders';
+                // Simpan response dari Midtrans
+                fetch('/payment/finish', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify(result)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Redirect ke halaman struk jika pembayaran berhasil
+                        window.location.href = /orders/${result.order_id}/receipt;
+                    } else {
+                        window.location.href = '/orders';
+                    }
+                });
             },
             onPending: function(result) {
+                alert('Pembayaran dalam proses. Silakan cek status pesanan Anda.');
                 window.location.href = '/orders';
             },
             onError: function(result) {
-                alert('Pembayaran gagal!');
+                alert('Pembayaran gagal! ' + result.status_message);
                 window.location.href = '/orders';
             },
             onClose: function() {
-                alert('Anda menutup popup tanpa menyelesaikan pembayaran');
+                if (!confirm('Anda yakin ingin menutup halaman pembayaran?')) {
+                    window.snap.pay(snapToken);
+                } else {
+                    window.location.href = '/orders';
+                }
             }
         });
     });

@@ -10,11 +10,14 @@ class AdminSeeder extends Seeder
 {
     public function run()
     {
-        User::create([
-            'name' => 'Admin',
-            'email' => 'admin@tobataste.com',            'password' => Hash::make('admin123'),
-            'role' => 'admin',
-            'alamat_pengiriman' => 'Admin Office'
-        ]);
+        User::updateOrCreate(
+            ['email' => 'admin@tobataste.com'],
+            [
+                'name' => 'Admin',
+                'password' => Hash::make('admin123'),
+                'role' => 'admin',
+                'alamat_pengiriman' => 'Admin Office'
+            ]
+        );
     }
 }

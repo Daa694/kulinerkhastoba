@@ -64,35 +64,54 @@
                 </div>
             </div>
             
-            <!-- Top Rated Menu Card -->
-            <div class="hidden md:block">
-                @if($topRatedKuliner)
-                <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-6 transform hover:scale-105 transition-all duration-300">
-                    <div class="text-center mb-4">
-                        <span class="inline-block px-4 py-1 bg-[#D2552D] text-white rounded-full text-sm font-semibold">
-                            Menu Favorit
-                        </span>
-                    </div>
-                    <!-- Top Rated Menu Image -->
-                    <img src="{{ Storage::url($topRatedKuliner->gambar) }}" 
-                         alt="{{ $topRatedKuliner->nama }}" 
-                         class="w-full h-48 object-cover rounded-xl mb-4">
-                    <!-- Menu Details -->
-                    <h3 class="text-xl font-bold text-gray-800 mb-2">{{ $topRatedKuliner->nama }}</h3>
-                    <div class="flex items-center justify-between mb-2">
-                        <div class="flex items-center">
-                            <i class="fas fa-star text-yellow-400 text-xl"></i>
-                            <span class="font-bold text-gray-800 text-xl ml-2">
-                                {{ number_format($topRatedKuliner->ratings_avg_rating, 1) }}
-                            </span>
+            <!-- Top Rated Menu Slider -->
+            <div class="w-full md:w-[420px]">
+                @if($topRatedKuliners->count())
+                <div class="relative" x-data="{ slide: 0 }" x-init="setInterval(() => { slide = (slide + 1) % {{ $topRatedKuliners->count() }} }, 2000)">
+                    <div id="populer-slider" class="overflow-hidden rounded-3xl shadow-2xl border-4 border-[#D2552D]/40 bg-white/90 backdrop-blur-xl">
+                        <div class="flex transition-transform duration-700" :style="'transform: translateX(-' + (slide * 100) + '%); width: ' + ({{ $topRatedKuliners->count() }} * 100) + '%'">
+                            @foreach($topRatedKuliners as $i => $populer)
+                            <div class="w-full flex-shrink-0">
+                                <div class="relative w-full h-64 flex items-center justify-center overflow-hidden group">
+                                    <img src="{{ Storage::url($populer->gambar) }}" alt="{{ $populer->nama }}" class="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105 rounded-t-3xl">
+                                    <div class="absolute top-3 left-3 z-10">
+                                        <span class="inline-flex items-center px-3 py-1 bg-gradient-to-r from-[#D2552D] to-[#F2994A] text-white rounded-full text-xs font-bold shadow">
+                                            <i class="fas fa-crown text-yellow-300 mr-1"></i> Populer
+                                        </span>
+                                    </div>
+                                    <div class="absolute top-3 right-3 z-10 flex items-center bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-lg">
+                                        <i class="fas fa-star text-yellow-400 mr-1"></i>
+                                        <span class="font-semibold text-[#D2552D] text-base">
+                                            {{ number_format($populer->ratings_avg_rating ?? 0, 1) }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="p-6 bg-gradient-to-br from-[#fff7f3] to-[#ffe5d0] rounded-b-3xl">
+                                    <h3 class="text-2xl font-extrabold text-[#2E5A43] mb-1 text-center group-hover:text-[#D2552D] transition-colors duration-300">{{ $populer->nama }}</h3>
+                                    <div class="flex items-center justify-between mb-3 px-2">
+                                        <span class="text-[#D2552D] font-bold text-lg">
+                                            Rp {{ number_format($populer->harga, 0, ',', '.') }}
+                                        </span>
+                                        <span class="text-gray-500 text-sm italic flex items-center gap-1">
+                                            <i class="fas fa-star text-yellow-400"></i>
+                                            {{ $populer->ratings->count() }} rating
+                                        </span>
+                                    </div>
+                                    <a href="{{ route('menu.detail', $populer) }}"
+                                       class="block w-full text-center px-4 py-2 bg-gradient-to-r from-[#2E5A43] to-[#4CAF50] text-white rounded-lg font-semibold hover:from-[#234732] hover:to-[#357a38] transition-colors duration-300 shadow-md">
+                                        Lihat Detail
+                                    </a>
+                                </div>
+                            </div>
+                            @endforeach
                         </div>
-                        <span class="text-[#D2552D] font-semibold">
-                            Rp {{ number_format($topRatedKuliner->harga, 0, ',', '.') }}
-                        </span>
-                    </div>                    <a href="{{ route('menu.detail', $topRatedKuliner) }}"
-                       class="block w-full text-center px-4 py-2 bg-[#2E5A43] text-white rounded-lg hover:bg-[#234732] transition-colors duration-300">
-                        Lihat Detail
-                    </a>
+                    </div>
+                    <!-- Slider Dots -->
+                    <div class="flex justify-center mt-3 space-x-2">
+                        @foreach($topRatedKuliners as $i => $populer)
+                            <button class="w-3 h-3 rounded-full bg-[#D2552D] opacity-40 border-2 border-[#D2552D] transition-all duration-300" :class="{ 'opacity-100 scale-125 border-4': slide === {{ $i }} }" @click="slide = {{ $i }}"></button>
+                        @endforeach
+                    </div>
                 </div>
                 @endif
             </div>
@@ -130,16 +149,19 @@
                 <i class="fas fa-filter"></i>
                 <span>Filter</span>
             </button>
-            <div class="relative">
-                <select class="appearance-none bg-white px-4 py-2 pr-8 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 text-[#2E5A43] cursor-pointer">
-                    <option>Urutkan</option>
-                    <option>Harga: Rendah ke Tinggi</option>
-                    <option>Harga: Tinggi ke Rendah</option>
-                    <option>Rating Tertinggi</option>
-                    <option>Terbaru</option>
-                </select>
-                <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-[#2E5A43]"></i>
-            </div>
+            <form method="GET" action="{{ route('menu') }}">
+    <div class="relative">
+        <select name="sort" onchange="this.form.submit()" class="appearance-none bg-white px-4 py-2 pr-8 rounded-lg shadow-md hover:shadow-lg transition duration-300 text-[#2E5A43] cursor-pointer">
+            <option value="">Urutkan</option>
+            <option value="harga_asc" {{ request('sort') == 'harga_asc' ? 'selected' : '' }}>Harga: Rendah ke Tinggi</option>
+            <option value="harga_desc" {{ request('sort') == 'harga_desc' ? 'selected' : '' }}>Harga: Tinggi ke Rendah</option>
+            <option value="rating_desc" {{ request('sort') == 'rating_desc' ? 'selected' : '' }}>Rating Tertinggi</option>
+            <option value="terbaru" {{ request('sort') == 'terbaru' ? 'selected' : '' }}>Terbaru</option>
+        </select>
+        <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-[#2E5A43]"></i>
+    </div>
+</form>
+
         </div>
     </div>
     

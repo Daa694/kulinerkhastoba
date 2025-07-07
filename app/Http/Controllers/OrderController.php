@@ -57,6 +57,7 @@ class OrderController extends Controller
                 'order_id' => $orderId,
                 'user_id' => Auth::id(),
                 'total' => $total,
+                'gross_amount' => $total, // ensure gross_amount is filled
                 'status' => Order::STATUS_PENDING,
                 'payment_status' => Order::PAYMENT_PENDING
             ]);
