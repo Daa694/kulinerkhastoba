@@ -1,0 +1,119 @@
+/* Kuliner Khas Toba Custom Styles */
+
+body {
+    font-family: 'Figtree', sans-serif;
+    background: linear-gradient(135deg, #fffbe9 0%, #fff 50%, #ffe5e5 100%);
+}
+
+.hero-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #eab308;
+    letter-spacing: -1px;
+    text-shadow: 0 2px 8px #fbbf24, 0 1px 0 #fff;
+}
+
+.hero-desc {
+    color: #444;
+    font-size: 1.15rem;
+    font-weight: 500;
+}
+
+.btn-utama {
+    background: linear-gradient(90deg, #dc2626 60%, #fbbf24 100%);
+    color: #fff;
+    font-weight: 600;
+    border-radius: 9999px;
+    box-shadow: 0 2px 8px #fbbf24a0;
+    transition: all 0.2s;
+}
+.btn-utama:hover {
+    background: #fbbf24;
+    color: #dc2626;
+}
+
+.btn-secondary {
+    background: #fbbf24;
+    color: #dc2626;
+    font-weight: 600;
+    border-radius: 9999px;
+    box-shadow: 0 2px 8px #fbbf24a0;
+    transition: all 0.2s;
+}
+.btn-secondary:hover {
+    background: #dc2626;
+    color: #fff;
+}
+
+.fitur-box {
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow: 0 2px 16px #fbbf2433;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.fitur-box:hover {
+    transform: translateY(-6px) scale(1.03);
+    box-shadow: 0 6px 24px #eab30833;
+}
+
+.fitur-box img {
+    width: 3.5rem;
+    height: 3.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.cta-section {
+    margin-top: 4rem;
+    text-align: center;
+}
+
+.cta-section h2 {
+    color: #eab308;
+    font-weight: 700;
+    font-size: 2rem;
+}
+
+.cta-section p {
+    color: #444;
+    margin-bottom: 1rem;
+}
+
+.cta-section .btn-wa {
+    background: #22c55e;
+    color: #fff;
+    font-weight: 600;
+    border-radius: 9999px;
+    padding: 0.75rem 2rem;
+    box-shadow: 0 2px 8px #22c55e33;
+    transition: all 0.2s;
+}
+.cta-section .btn-wa:hover {
+    background: #15803d;
+    color: #fff;
+}
+
+footer {
+    border-top: 1px solid #fbbf24;
+    padding-top: 1.5rem;
+    margin-top: 4rem;
+    color: #888;
+    background: transparent;
+}
+footer a {
+    color: #eab308;
+    transition: color 0.2s;
+}
+footer a:hover {
+    color: #dc2626;
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+    .fitur-box {
+        padding: 1.25rem 0.75rem;
+    }
+}
