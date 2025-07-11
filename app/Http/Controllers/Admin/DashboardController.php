@@ -13,14 +13,34 @@ class DashboardController extends Controller
     public function __construct()
     {
         $this->middleware(['auth', 'admin']);
-    }    public function index()
+    }
+
+    public function index(\Illuminate\Http\Request $request)
     {
         try {
-            // Get recent orders with user information
+            $filter = $request->get('filter', 'today');
             $recentOrders = Order::with(['user'])
                                 ->orderBy('created_at', 'desc')
                                 ->take(10)
                                 ->get();
+
+            // Filter penghasilan
+            switch($filter) {
+                case 'yesterday':
+                    $sales = $this->getSalesByDays(1, true); // kemarin
+                    break;
+                case '3days':
+                    $sales = $this->getSalesByDays(3);
+                    break;
+                case 'week':
+                    $sales = $this->getSalesByDays(7);
+                    break;
+                case 'month':
+                    $sales = $this->getSalesByDays(30);
+                    break;
+                default:
+                    $sales = $this->getSalesByDays(1); // hari ini
+            }
 
             $data = [
                 'totalKuliners' => $this->getTotalKuliners(),
@@ -28,14 +48,17 @@ class DashboardController extends Controller
                 'totalUsers' => $this->getTotalUsers(),
                 'popularKuliners' => $this->getPopularKuliners(),
                 'recentOrders' => $recentOrders,
-                'monthlySales' => $this->getMonthlySales()
+                'monthlySales' => $this->getMonthlySales(),
+                'filter' => $filter,
+                'sales' => $sales,
             ];
-
             return view('admin.dashboard', $data);
         } catch (\Exception $e) {
             return back()->with('error', 'Error loading dashboard: ' . $e->getMessage());
         }
     }
+
+    // (duplikat getSalesByDays dihapus)
 
     protected function getTotalKuliners()
     {
@@ -50,7 +73,9 @@ class DashboardController extends Controller
     protected function getTotalUsers()
     {
         return DB::table('users')->where('role', 'user')->count();
-    }    protected function getPopularKuliners()
+    }
+
+    protected function getPopularKuliners()
     {
         return DB::table('kuliners')
             ->leftJoin('ratings', 'kuliners.id', '=', 'ratings.kuliner_id')
@@ -90,6 +115,7 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
     }
+
     protected function getMonthlySales()
     {
         $monthlySales = DB::table('orders')
@@ -118,4 +144,43 @@ class DashboardController extends Controller
         return $monthlySales;
     }
 
+    /**
+     * Get sales summary for last N days
+     */
+    /**
+     * Get sales summary for last N days or yesterday
+     * @param int $days
+     * @param bool $yesterday
+     * @return array
+     */
+    protected function getSalesByDays($days, $yesterday = false)
+    {
+        if ($yesterday) {
+            $start = now()->subDay()->startOfDay();
+            $end = now()->subDay()->endOfDay();
+            $orders = DB::table('orders')
+                ->whereIn('payment_status', ['settlement', 'capture'])
+                ->whereBetween('created_at', [$start, $end])
+                ->get();
+            $period = 'Kemarin';
+        } else {
+            $date = now()->subDays($days)->startOfDay();
+            $orders = DB::table('orders')
+                ->whereIn('payment_status', ['settlement', 'capture'])
+                ->where('created_at', '>=', $date)
+                ->get();
+            $period = $days == 1 ? 'Hari Ini' : $days . ' Hari Terakhir';
+        }
+
+        $total_sales = $orders->sum('total');
+        $total_orders = $orders->count();
+        $average_order = $total_orders > 0 ? $total_sales / $total_orders : 0;
+
+        return [
+            'period' => $period,
+            'total_sales' => $total_sales,
+            'total_orders' => $total_orders,
+            'average_order' => $average_order
+        ];
+    }
 }

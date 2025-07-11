@@ -64,16 +64,23 @@
                 </div>
             </div>
             
-            <!-- Top Rated Menu Slider -->
-            <div class="w-full md:w-[420px]">
+            <!-- Top 4 Rated Menu Grid -->
+            <!-- Top 4 Rated Menu Slider (Modern, Animated, 4 Gambar) -->
+            <div class="w-full">
                 @if($topRatedKuliners->count())
-                <div class="relative" x-data="{ slide: 0 }" x-init="setInterval(() => { slide = (slide + 1) % {{ $topRatedKuliners->count() }} }, 2000)">
-                    <div id="populer-slider" class="overflow-hidden rounded-3xl shadow-2xl border-4 border-[#D2552D]/40 bg-white/90 backdrop-blur-xl">
-                        <div class="flex transition-transform duration-700" :style="'transform: translateX(-' + (slide * 100) + '%); width: ' + ({{ $topRatedKuliners->count() }} * 100) + '%'">
-                            @foreach($topRatedKuliners as $i => $populer)
-                            <div class="w-full flex-shrink-0">
-                                <div class="relative w-full h-64 flex items-center justify-center overflow-hidden group">
-                                    <img src="{{ Storage::url($populer->gambar) }}" alt="{{ $populer->nama }}" class="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105 rounded-t-3xl">
+                <div class="relative flex flex-col items-center">
+                    <div class="mb-4 text-center">
+                        <h2 class="text-2xl md:text-3xl font-bold text-[#D2552D] tracking-wide mb-1">Menu Paling Populer</h2>
+                        <p class="text-gray-700 text-base md:text-lg">4 Kuliner dengan rating tertinggi pilihan pelanggan</p>
+                    </div>
+                    <div id="populer-slider" class="flex overflow-hidden w-full max-w-2xl mx-auto relative" style="height: 270px;">
+                        @foreach($topRatedKuliners->take(4) as $i => $populer)
+                        <div class="populer-slide w-full absolute left-0 top-0 transition-all duration-700 ease-in-out cursor-pointer"
+                             style="z-index:{{ 10 - $i }}; opacity:0; transform:scale(0.9) translateX(40px);"
+                             onclick="window.location='{{ route('menu.detail', $populer) }}'">
+                            <div class="bg-gradient-to-br from-[#fff7f3] to-[#ffe5d0] rounded-3xl shadow-2xl border-4 border-[#D2552D]/60 overflow-hidden flex flex-col group h-full">
+                                <div class="relative w-full h-44 flex items-center justify-center overflow-hidden">
+                                    <img src="{{ Storage::url($populer->gambar) }}" alt="{{ $populer->nama }}" class="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105 rounded-t-3xl border-b-2 border-[#D2552D]/30">
                                     <div class="absolute top-3 left-3 z-10">
                                         <span class="inline-flex items-center px-3 py-1 bg-gradient-to-r from-[#D2552D] to-[#F2994A] text-white rounded-full text-xs font-bold shadow">
                                             <i class="fas fa-crown text-yellow-300 mr-1"></i> Populer
@@ -86,32 +93,91 @@
                                         </span>
                                     </div>
                                 </div>
-                                <div class="p-6 bg-gradient-to-br from-[#fff7f3] to-[#ffe5d0] rounded-b-3xl">
-                                    <h3 class="text-2xl font-extrabold text-[#2E5A43] mb-1 text-center group-hover:text-[#D2552D] transition-colors duration-300">{{ $populer->nama }}</h3>
-                                    <div class="flex items-center justify-between mb-3 px-2">
+                                <div class="p-5 flex-1 flex flex-col justify-between">
+                                    <h3 class="text-xl font-extrabold text-[#2E5A43] mb-2 text-center group-hover:text-[#D2552D] transition-colors duration-300">{{ $populer->nama }}</h3>
+                                    <div class="flex items-center justify-between mb-2 px-2">
                                         <span class="text-[#D2552D] font-bold text-lg">
                                             Rp {{ number_format($populer->harga, 0, ',', '.') }}
                                         </span>
-                                        <span class="text-gray-500 text-sm italic flex items-center gap-1">
+                                        <span class="text-gray-500 text-xs italic flex items-center gap-1">
                                             <i class="fas fa-star text-yellow-400"></i>
                                             {{ $populer->ratings->count() }} rating
                                         </span>
                                     </div>
-                                    <a href="{{ route('menu.detail', $populer) }}"
-                                       class="block w-full text-center px-4 py-2 bg-gradient-to-r from-[#2E5A43] to-[#4CAF50] text-white rounded-lg font-semibold hover:from-[#234732] hover:to-[#357a38] transition-colors duration-300 shadow-md">
-                                        Lihat Detail
-                                    </a>
+                                    <span class="block w-full text-center px-4 py-2 bg-gradient-to-r from-[#2E5A43] to-[#4CAF50] text-white rounded-lg font-semibold hover:from-[#234732] hover:to-[#357a38] transition-colors duration-300 shadow-md mt-2 pointer-events-none opacity-80">Lihat Detail</span>
                                 </div>
                             </div>
-                            @endforeach
                         </div>
-                    </div>
-                    <!-- Slider Dots -->
-                    <div class="flex justify-center mt-3 space-x-2">
-                        @foreach($topRatedKuliners as $i => $populer)
-                            <button class="w-3 h-3 rounded-full bg-[#D2552D] opacity-40 border-2 border-[#D2552D] transition-all duration-300" :class="{ 'opacity-100 scale-125 border-4': slide === {{ $i }} }" @click="slide = {{ $i }}"></button>
                         @endforeach
                     </div>
+                    <!-- Slider Dots -->
+                    <div class="flex justify-center mt-4 space-x-2">
+                        @foreach($topRatedKuliners->take(4) as $i => $populer)
+                        <button class="w-3 h-3 rounded-full bg-[#D2552D] opacity-40 border-2 border-[#D2552D] transition-all duration-300 slider-dot" data-index="{{ $i }}"></button>
+                        @endforeach
+                    </div>
+                    <button id="populer-prev" class="absolute left-0 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-[#D2552D] hover:text-white text-[#D2552D] rounded-full shadow-lg w-10 h-10 flex items-center justify-center z-20 transition-all duration-300"><i class="fas fa-chevron-left"></i></button>
+                    <button id="populer-next" class="absolute right-0 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-[#D2552D] hover:text-white text-[#D2552D] rounded-full shadow-lg w-10 h-10 flex items-center justify-center z-20 transition-all duration-300"><i class="fas fa-chevron-right"></i></button>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const slides = document.querySelectorAll('#populer-slider .populer-slide');
+                            const dots = document.querySelectorAll('.slider-dot');
+                            let index = 0;
+                            let interval = null;
+                            function showSlide(i) {
+                                slides.forEach((slide, idx) => {
+                                    if(idx === i) {
+                                        slide.style.opacity = 1;
+                                        slide.style.transform = 'scale(1) translateX(0)';
+                                        slide.style.zIndex = 10;
+                                    } else {
+                                        slide.style.opacity = 0;
+                                        slide.style.transform = 'scale(0.9) translateX(40px)';
+                                        slide.style.zIndex = 5;
+                                    }
+                                });
+                                dots.forEach((dot, idx) => {
+                                    dot.classList.toggle('opacity-100', idx === i);
+                                    dot.classList.toggle('scale-125', idx === i);
+                                    dot.classList.toggle('border-4', idx === i);
+                                });
+                            }
+                            function nextSlide() {
+                                index = (index + 1) % slides.length;
+                                showSlide(index);
+                            }
+                            function prevSlide() {
+                                index = (index - 1 + slides.length) % slides.length;
+                                showSlide(index);
+                            }
+                            function startAutoSlide() {
+                                interval = setInterval(nextSlide, 2500);
+                            }
+                            function stopAutoSlide() {
+                                clearInterval(interval);
+                            }
+                            document.getElementById('populer-next').onclick = function() {
+                                stopAutoSlide();
+                                nextSlide();
+                                startAutoSlide();
+                            };
+                            document.getElementById('populer-prev').onclick = function() {
+                                stopAutoSlide();
+                                prevSlide();
+                                startAutoSlide();
+                            };
+                            dots.forEach((dot, idx) => {
+                                dot.onclick = function() {
+                                    stopAutoSlide();
+                                    index = idx;
+                                    showSlide(index);
+                                    startAutoSlide();
+                                };
+                            });
+                            showSlide(index);
+                            startAutoSlide();
+                        });
+                    </script>
                 </div>
                 @endif
             </div>
@@ -259,6 +325,16 @@
 
 .animate-fade-in-down {
     animation: fadeInDown 0.5s ease-out;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
 }
 </style>
 @endsection

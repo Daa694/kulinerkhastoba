@@ -25,6 +25,7 @@
             <label class="block text-gray-700 mb-1">Email</label>
             <input type="email" name="email" value="{{ old('email', $contact->email ?? '') }}" class="w-full border rounded px-3 py-2">
         </div>
+        <!-- Hapus fitur edit tentang kami, kembali ke versi hanya edit kontak -->
         <button type="submit" class="w-full bg-[#2E5A43] text-white py-2 px-4 rounded hover:bg-[#244934]">Simpan Perubahan</button>
     </form>
     <div class="mt-6 text-center">

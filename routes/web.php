@@ -31,12 +31,39 @@ Route::get('/rekomendasi', [KulinerController::class, 'rekomendasi'])->name('rek
 
 // About Route
 Route::get('/about', [AboutController::class, 'index'])->name('about');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/about/edit', [AboutController::class, 'edit'])->name('about.edit');
+    Route::put('/about/update', [AboutController::class, 'update'])->name('about.update');
+});
 
 // Contact Route
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
+Route::post('/contact/send', [ContactController::class, 'send'])->name('contact.send');
 Route::middleware(['auth'])->group(function () {
     Route::get('/contact/edit', [ContactController::class, 'edit'])->name('contact.edit');
     Route::put('/contact/update', [ContactController::class, 'update'])->name('contact.update');
+});
+
+// Admin: Pesan Kontak User & Dashboard Penghasilan Filter
+Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
+    // Pesan Kontak User
+    Route::get('/contact-messages', function(\Illuminate\Http\Request $request) {
+        $query = \App\Models\ContactMessage::query();
+        if ($request->filled('name')) {
+            $query->where('name', 'like', '%' . $request->name . '%');
+        }
+        if ($request->filled('email')) {
+            $query->where('email', 'like', '%' . $request->email . '%');
+        }
+        if ($request->filled('date')) {
+            $query->whereDate('created_at', $request->date);
+        }
+        $messages = $query->latest()->get();
+        return view('admin.contact_messages', compact('messages'));
+    })->name('admin.contact.messages');
+
+    // Dashboard Penghasilan Filter
+    Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
 });
 
 // Redirect /home to root URL

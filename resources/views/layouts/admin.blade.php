@@ -34,6 +34,9 @@
                 <a href="{{ route('menu') }}" class="block px-4 py-2 rounded hover:bg-[#244934]">
                     <i class="fas fa-utensils mr-2"></i> Lihat Menu
                 </a>
+                <a href="{{ route('admin.contact.messages') }}" class="block px-4 py-2 rounded hover:bg-[#244934] {{ request()->routeIs('admin.contact.messages') ? 'bg-[#244934]' : '' }}">
+                    <i class="fas fa-envelope mr-2"></i> Pesan Kontak
+                </a>
                 <form action="{{ route('admin.logout') }}" method="POST" class="mt-4">
                     @csrf
                     <button type="submit" class="w-full px-4 py-2 text-left rounded hover:bg-[#D2552D]">

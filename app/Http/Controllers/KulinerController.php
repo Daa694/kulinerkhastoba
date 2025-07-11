@@ -12,6 +12,8 @@ class KulinerController extends Controller
     {
         $this->middleware('auth');
         $this->middleware('admin')->only(['create', 'store', 'edit', 'update', 'destroy']);
+        // Guest bisa akses rekomendasi
+        $this->middleware('auth')->except(['rekomendasi']);
     }
 
     public function index()
@@ -78,12 +80,22 @@ class KulinerController extends Controller
 
     public function rekomendasi()
     {
-        $kuliners = Kuliner::with(['ratings'])
+        // Ambil kuliner terlaris berdasarkan jumlah barang terjual (quantity)
+        $kuliners = Kuliner::with(['ratings', 'orderItems.order.user'])
             ->withAvg('ratings', 'rating')
+            ->withCount('orderItems')
+            ->withSum('orderItems', 'quantity')
             ->where('tersedia', true)
-            ->orderBy('stok', 'desc')
+            ->orderByDesc('order_items_sum_quantity')
             ->take(10)
             ->get();
+
+        // Ambil user yang pernah membeli setiap kuliner
+        foreach ($kuliners as $kuliner) {
+            $userIds = $kuliner->orderItems->pluck('order.user_id')->unique();
+            $kuliner->buyers = \App\Models\User::whereIn('id', $userIds)->get();
+        }
+
         return view('kuliner.rekomendasi', compact('kuliners'));
     }
 }

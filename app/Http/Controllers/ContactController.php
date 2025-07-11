@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
 use App\Models\Contact;
 use Illuminate\Support\Facades\Auth;
 
@@ -37,6 +36,7 @@ class ContactController extends Controller
             'instagram' => 'nullable|string',
             'twitter' => 'nullable|string',
             'website' => 'nullable|string',
+            'about_content' => 'nullable|string',
         ]);
         $contact = Contact::first();
         if (!$contact) {
@@ -44,6 +44,32 @@ class ContactController extends Controller
         } else {
             $contact->update($data);
         }
-        return redirect()->route('contact.edit')->with('success', 'Kontak berhasil diperbarui!');
+        // Update About
+        if (isset($data['about_content'])) {
+            $about = \App\Models\About::first();
+            if (!$about) {
+                $about = new \App\Models\About();
+            }
+            $about->content = $data['about_content'];
+            $about->save();
+        }
+        return redirect()->route('contact.edit')->with('success', 'Kontak & Tentang Kami berhasil diperbarui!');
+    }
+
+    public function send(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'message' => 'required|string',
+        ]);
+        $userId = auth()->check() ? auth()->id() : null;
+        \App\Models\ContactMessage::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'message' => $validated['message'],
+            'user_id' => $userId,
+        ]);
+        return redirect()->route('contact')->with('success', 'Pesan Anda berhasil dikirim!');
     }
 }

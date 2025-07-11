@@ -116,6 +116,16 @@
     <!-- Monthly Sales Section -->
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
         <h2 class="text-xl font-bold text-[#2E5A43] mb-4">Total Penghasilan</h2>
+        <form method="GET" action="{{ route('admin.dashboard') }}" class="mb-4 flex flex-wrap gap-3 items-end">
+            <label class="block text-sm font-semibold mb-1">Filter Periode</label>
+            <select name="filter" class="border rounded px-3 py-2 text-sm" onchange="this.form.submit()">
+                <option value="today" {{ ($filter ?? 'today') == 'today' ? 'selected' : '' }}>Hari Ini</option>
+                <option value="yesterday" {{ ($filter ?? '') == 'yesterday' ? 'selected' : '' }}>Kemarin</option>
+                <option value="3days" {{ ($filter ?? '') == '3days' ? 'selected' : '' }}>3 Hari Terakhir</option>
+                <option value="week" {{ ($filter ?? '') == 'week' ? 'selected' : '' }}>Seminggu</option>
+                <option value="month" {{ ($filter ?? '') == 'month' ? 'selected' : '' }}>Sebulan</option>
+            </select>
+        </form>
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
@@ -127,18 +137,18 @@
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse($monthlySales ?? [] as $month)
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ $month['period'] }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">Rp {{ number_format($month['total_sales'], 0, ',', '.') }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ number_format($month['total_orders'], 0, ',', '.') }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">Rp {{ number_format($month['average_order'], 0, ',', '.') }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="4" class="px-6 py-4 text-center text-gray-500">Belum ada data penjualan</td>
-                        </tr>
-                    @endforelse
+                    @if(isset($sales))
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">{{ $sales['period'] ?? '-' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">Rp {{ number_format($sales['total_sales'] ?? 0, 0, ',', '.') }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">{{ number_format($sales['total_orders'] ?? 0, 0, ',', '.') }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">Rp {{ number_format($sales['average_order'] ?? 0, 0, ',', '.') }}</td>
+                    </tr>
+                    @else
+                    <tr>
+                        <td colspan="4" class="px-6 py-4 text-center text-gray-500">Belum ada data penjualan</td>
+                    </tr>
+                    @endif
                 </tbody>
             </table>
         </div>

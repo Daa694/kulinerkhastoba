@@ -86,4 +86,54 @@
         </div>
     @endif
 </div>
+    @if(session('success'))
+        <div id="notifOrderSuccessModal" class="fixed inset-0 flex items-center justify-center z-50">
+            <div class="bg-gradient-to-r from-[#2E5A43] to-[#1f3d2d] rounded-xl shadow-2xl p-8 w-80 animate-fade-in">
+                <div class="flex flex-col items-center">
+                    <i class="fas fa-check-circle text-4xl text-yellow-300 mb-4"></i>
+                    <span class="text-white text-lg font-semibold mb-2">Berhasil!</span>
+                    <p class="text-white text-center mb-6">{{ session('success') }}</p>
+                    <button onclick="closeOrderSuccessNotif()" class="px-6 py-2 rounded-full bg-yellow-400 text-[#2E5A43] font-bold shadow hover:bg-yellow-300 transition">OK</button>
+                </div>
+            </div>
+            <div class="fixed inset-0 bg-black opacity-40" onclick="closeOrderSuccessNotif()"></div>
+        </div>
+        <style>
+            @keyframes fade-in {
+                from { opacity: 0; transform: scale(0.95); }
+                to { opacity: 1; transform: scale(1); }
+            }
+            .animate-fade-in { animation: fade-in 0.2s ease; }
+        </style>
+        <script>
+            function closeOrderSuccessNotif() {
+                document.getElementById('notifOrderSuccessModal').classList.add('hidden');
+            }
+        </script>
+    @endif
+    @if(session('error'))
+        <div id="notifOrderErrorModal" class="fixed inset-0 flex items-center justify-center z-50">
+            <div class="bg-gradient-to-r from-[#2E5A43] to-[#1f3d2d] rounded-xl shadow-2xl p-8 w-80 animate-fade-in">
+                <div class="flex flex-col items-center">
+                    <i class="fas fa-exclamation-circle text-4xl text-yellow-300 mb-4"></i>
+                    <span class="text-white text-lg font-semibold mb-2">Gagal!</span>
+                    <p class="text-white text-center mb-6">{{ session('error') }}</p>
+                    <button onclick="closeOrderErrorNotif()" class="px-6 py-2 rounded-full bg-yellow-400 text-[#2E5A43] font-bold shadow hover:bg-yellow-300 transition">OK</button>
+                </div>
+            </div>
+            <div class="fixed inset-0 bg-black opacity-40" onclick="closeOrderErrorNotif()"></div>
+        </div>
+        <style>
+            @keyframes fade-in {
+                from { opacity: 0; transform: scale(0.95); }
+                to { opacity: 1; transform: scale(1); }
+            }
+            .animate-fade-in { animation: fade-in 0.2s ease; }
+        </style>
+        <script>
+            function closeOrderErrorNotif() {
+                document.getElementById('notifOrderErrorModal').classList.add('hidden');
+            }
+        </script>
+    @endif
 @endsection

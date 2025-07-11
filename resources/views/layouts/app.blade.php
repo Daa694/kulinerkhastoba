@@ -155,6 +155,11 @@
             </div>
 
             <!-- Search -->
+            @php
+                $isAdmin = auth()->check() && auth()->user()->isAdmin();
+                $isGuestPage = request()->routeIs('login') || request()->routeIs('register') || request()->routeIs('register.form');
+            @endphp
+            @if(!$isGuestPage)
             <div class="flex-1 max-w-xl mx-8">
                 <form action="{{ route('menu') }}" method="GET" class="relative group">
                     <input type="text" name="search" placeholder="Cari menu favorit Anda..."
@@ -165,34 +170,42 @@
                     </button>
                 </form>
             </div>
+            @endif
 
             <!-- Links -->
             <div class="flex items-center space-x-8">
+                @php
+                    $isAdmin = auth()->check() && auth()->user()->isAdmin();
+                    $isGuestPage = request()->routeIs('login') || request()->routeIs('register') || request()->routeIs('register.form');
+                @endphp
                 <a href="{{ route('menu') }}" class="nav-link text-white hover:text-[#D2552D] flex items-center space-x-2">
                     <i class="fas fa-utensils"></i><span>Menu</span>
                 </a>
-                <a href="{{ route('rekomendasi') }}" class="nav-link text-white hover:text-[#D2552D] flex items-center space-x-2">
-                    <i class="fas fa-star"></i><span>Rekomendasi</span>
-                </a>
-                <a href="{{ route('about') }}" class="nav-link text-white hover:text-[#D2552D] flex items-center space-x-2">
-                    <i class="fas fa-info-circle"></i><span>About</span>
-                </a>
-                <a href="{{ route('contact') }}" class="nav-link text-white hover:text-[#D2552D] flex items-center space-x-2">
-                    <i class="fas fa-envelope"></i><span>Contact</span>
-                </a>
+                @if($isGuestPage)
+                    <a href="{{ route('contact') }}" class="nav-link text-white hover:text-[#D2552D] flex items-center space-x-2">
+                        <i class="fas fa-envelope"></i><span>Contact</span>
+                    </a>
+                @else
+                    @if(!$isAdmin)
+                        <a href="{{ route('orders.index') }}" class="nav-link text-white hover:text-[#D2552D] flex items-center space-x-2">
+                            <i class="fas fa-shopping-bag"></i><span>Pesanan Saya</span>
+                        </a>
+                    @endif
+                    <a href="{{ route('contact') }}" class="nav-link text-white hover:text-[#D2552D] flex items-center space-x-2">
+                        <i class="fas fa-envelope"></i><span>Contact</span>
+                    </a>
+                @endif
 
                 @auth
-                    @if(Auth::user()->isAdmin())
+                    @if(Auth::user()->isAdmin() && !$isGuestPage)
                         <a href="{{ route('admin.dashboard') }}" class="nav-link text-yellow-300 hover:text-yellow-400 flex items-center space-x-2 font-semibold">
                             <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
-                        </a>
-                        <a href="{{ route('admin.kuliner.index') }}" class="nav-link text-yellow-300 hover:text-yellow-400 flex items-center space-x-2 font-semibold">
-                            <i class="fas fa-cogs"></i><span>Kelola Menu</span>
                         </a>
                     @endif
                 @endauth
 
-                <!-- Cart -->
+                <!-- Cart & Profile -->
+                @if(!$isGuestPage)
                 <a href="{{ route('cart.index') }}" class="nav-link text-white relative">
                     <div class="relative transform hover:scale-110">
                         <i class="fas fa-shopping-cart text-xl"></i>
@@ -204,47 +217,76 @@
 
                 <!-- Profile -->
                 <div class="relative dropdown">
+                    @guest
+                    <button onclick="showLoginNotif()" class="flex items-center space-x-3 text-white hover:text-[#D2552D]">
+                        <i class="fas fa-user-circle text-2xl"></i>
+                        <span>Profil</span>
+                    </button>
+                    <!-- Notif Modal -->
+                    <div id="notifLoginModal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
+                        <div class="bg-gradient-to-r from-[#2E5A43] to-[#1f3d2d] rounded-xl shadow-2xl p-8 w-80 animate-fade-in">
+                            <div class="flex flex-col items-center">
+                                <i class="fas fa-exclamation-circle text-4xl text-yellow-300 mb-4"></i>
+                                <span class="text-white text-lg font-semibold mb-2">Akses Profil</span>
+                                <p class="text-white text-center mb-6">Anda harus login terlebih dahulu untuk mengakses profil!</p>
+                                <button onclick="closeLoginNotifAndRedirect()" class="px-6 py-2 rounded-full bg-yellow-400 text-[#2E5A43] font-bold shadow hover:bg-yellow-300 transition">OK</button>
+                            </div>
+                        </div>
+                        <div class="fixed inset-0 bg-black opacity-40" onclick="closeLoginNotifAndRedirect()"></div>
+                    </div>
+                    <style>
+                        @keyframes fade-in {
+                            from { opacity: 0; transform: scale(0.95); }
+                            to { opacity: 1; transform: scale(1); }
+                        }
+                        .animate-fade-in { animation: fade-in 0.2s ease; }
+                    </style>
+                    <script>
+                        function showLoginNotif() {
+                            document.getElementById('notifLoginModal').classList.remove('hidden');
+                        }
+                        function closeLoginNotifAndRedirect() {
+                            document.getElementById('notifLoginModal').classList.add('hidden');
+                            window.location.href = "{{ route('login') }}";
+                        }
+                    </script>
+                    @else
                     <button onclick="toggleDropdown()" class="flex items-center space-x-3 text-white hover:text-[#D2552D]">
                         <i class="fas fa-user-circle text-2xl"></i>
-                        @auth
-                            <span>{{ Auth::user()->name }}</span>
-                            <i class="fas fa-chevron-down text-sm"></i>
-                        @endauth
+                        <span>{{ Auth::user()->name }}</span>
+                        <i class="fas fa-chevron-down text-sm"></i>
                     </button>
                     <div id="userDropdown" class="dropdown-menu absolute right-0 mt-3 w-72 bg-white rounded-lg shadow-xl py-2 z-50">
-                        @auth
-                            <div class="px-6 py-4 border-b border-gray-100">
-                                <div class="font-semibold text-lg text-gray-800 flex items-center">
-                                    {{ Auth::user()->name }}
-                                    @if(Auth::user()->isAdmin())
-                                        <span class="ml-2 px-2 py-0.5 bg-yellow-400 text-xs text-gray-900 rounded-full font-bold">Admin</span>
-                                    @endif
-                                </div>
-                                <div class="text-gray-600 text-sm">{{ Auth::user()->email }}</div>
-                                <div class="text-gray-500 text-sm italic mt-1">
-                                    <i class="fas fa-map-marker-alt mr-1"></i>
-                                    {{ Auth::user()->alamat_pengiriman ?? 'Belum diisi' }}
-                                </div>
+                        <div class="px-6 py-4 border-b border-gray-100">
+                            <div class="font-semibold text-lg text-gray-800 flex items-center">
+                                {{ Auth::user()->name }}
+                                @if(Auth::user()->isAdmin())
+                                    <span class="ml-2 px-2 py-0.5 bg-yellow-400 text-xs text-gray-900 rounded-full font-bold">Admin</span>
+                                @endif
                             </div>
-                            <div class="py-2">
-                                <a href="{{ route('profil.index') }}" class="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-50">
-                                    <i class="fas fa-user-edit w-5"></i><span class="ml-3">Edit Profil</span>
-                                </a>
-                                <a href="{{ route('orders.index') }}" class="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-50">
-                                    <i class="fas fa-shopping-bag w-5"></i><span class="ml-3">Pesanan Saya</span>
-                                </a>
+                            <div class="text-gray-600 text-sm">{{ Auth::user()->email }}</div>
+                            <div class="text-gray-500 text-sm italic mt-1">
+                                <i class="fas fa-map-marker-alt mr-1"></i>
+                                {{ Auth::user()->alamat_pengiriman ?? 'Belum diisi' }}
                             </div>
-                            <div class="border-t border-gray-100">
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit" class="w-full flex items-center px-6 py-3 text-gray-700 hover:bg-gray-50">
-                                        <i class="fas fa-sign-out-alt w-5"></i><span class="ml-3">Logout</span>
-                                    </button>
-                                </form>
-                            </div>
-                        @endauth
+                        </div>
+                        <div class="py-2">
+                            <a href="{{ route('profil.index') }}" class="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-50">
+                                <i class="fas fa-user-edit w-5"></i><span class="ml-3">Edit Profil</span>
+                            </a>
+                        </div>
+                        <div class="border-t border-gray-100">
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="w-full flex items-center px-6 py-3 text-gray-700 hover:bg-gray-50">
+                                    <i class="fas fa-sign-out-alt w-5"></i><span class="ml-3">Logout</span>
+                                </button>
+                            </form>
+                        </div>
                     </div>
+                    @endguest
                 </div>
+                @endif
             </div>
         </div>
     </div>
