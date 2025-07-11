@@ -64,14 +64,14 @@
                 </div>
             </div>
             
-            <!-- Top 4 Rated Menu Grid -->
-            <!-- Top 4 Rated Menu Slider (Modern, Animated, 4 Gambar) -->
+            <!-- Top 3 Rated Menu Grid -->
+            <!-- Top 3 Rated Menu Slider (Modern, Animated, 3 Gambar) -->
             <div class="w-full">
                 @if($topRatedKuliners->count())
                 <div class="relative flex flex-col items-center">
-                    <div class="mb-4 text-center">
+                    <div class="mb-3 text-center">
                         <h2 class="text-2xl md:text-3xl font-bold text-[#D2552D] tracking-wide mb-1">Menu Paling Populer</h2>
-                        <p class="text-gray-700 text-base md:text-lg">4 Kuliner dengan rating tertinggi pilihan pelanggan</p>
+                        <p class="text-gray-700 text-base md:text-lg">3 Kuliner dengan rating tertinggi pilihan pelanggan</p>
                     </div>
                     <div id="populer-slider" class="flex overflow-hidden w-full max-w-2xl mx-auto relative" style="height: 270px;">
                         @foreach($topRatedKuliners->take(4) as $i => $populer)
@@ -311,6 +311,9 @@
     </div>
 </div>
 
+
+
+
 <style>
 @keyframes fadeInDown {
     from {
@@ -338,3 +341,5 @@
 }
 </style>
 @endsection
+
+

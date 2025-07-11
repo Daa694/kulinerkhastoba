@@ -19,10 +19,7 @@ class MenuController extends Controller
                        ->where('stok', '>', 0);
         
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('nama', 'like', '%' . $search . '%')
-                  ->orWhere('deskripsi', 'like', '%' . $search . '%');
-            });
+            $query->where('nama', 'like', '%' . $search . '%');
         }
 
         // Sorting logic

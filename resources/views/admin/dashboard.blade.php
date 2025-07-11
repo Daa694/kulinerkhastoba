@@ -126,6 +126,9 @@
                 <option value="month" {{ ($filter ?? '') == 'month' ? 'selected' : '' }}>Sebulan</option>
             </select>
         </form>
+        <div class="mb-6">
+            <canvas id="earningChart" height="80"></canvas>
+        </div>
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
@@ -152,6 +155,18 @@
                 </tbody>
             </table>
         </div>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="/js/chart.earning.js"></script>
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Data for chart: labels and data
+            const earningLabels = @json($earningLabels ?? []);
+            const earningData = @json($earningData ?? []);
+            if (earningLabels.length && earningData.length) {
+                window.renderEarningChart(earningLabels, earningData);
+            }
+        });
+        </script>
     </div>
 </div>
 @endsection

@@ -181,6 +181,9 @@
                 <a href="{{ route('menu') }}" class="nav-link text-white hover:text-[#D2552D] flex items-center space-x-2">
                     <i class="fas fa-utensils"></i><span>Menu</span>
                 </a>
+                <a href="{{ route('rekomendasi') }}" class="nav-link text-white hover:text-[#D2552D] flex items-center space-x-2">
+                    <i class="fas fa-star"></i><span>Rekomendasi</span>
+                </a>
                 @if($isGuestPage)
                     <a href="{{ route('contact') }}" class="nav-link text-white hover:text-[#D2552D] flex items-center space-x-2">
                         <i class="fas fa-envelope"></i><span>Contact</span>
@@ -209,9 +212,11 @@
                 <a href="{{ route('cart.index') }}" class="nav-link text-white relative">
                     <div class="relative transform hover:scale-110">
                         <i class="fas fa-shopping-cart text-xl"></i>
-                        <span class="cart-badge absolute -top-2 -right-2 bg-[#D2552D] text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-semibold shadow-lg">
+                        @if(($cartCount ?? 0) > 0)
+                        <span class="cart-badge absolute -top-2 -right-2 bg-[#D2552D] text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-semibold shadow-lg animate-bounce">
                             {{ $cartCount ?? 0 }}
                         </span>
+                        @endif
                     </div>
                 </a>
 
@@ -278,8 +283,9 @@
                         <div class="border-t border-gray-100">
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
-                                <button type="submit" class="w-full flex items-center px-6 py-3 text-gray-700 hover:bg-gray-50">
-                                    <i class="fas fa-sign-out-alt w-5"></i><span class="ml-3">Logout</span>
+                                <button type="submit" class="w-full flex items-center px-6 py-3 text-gray-700 hover:bg-gray-50 focus:outline-none focus:bg-gray-100 transition">
+                                    <i class="fas fa-sign-out-alt w-5"></i>
+                                    <span class="ml-3">Logout</span>
                                 </button>
                             </form>
                         </div>
@@ -293,9 +299,17 @@
 </nav>
 
 <!-- Konten -->
+
 <main class="container mx-auto px-4 py-8">
     @yield('content')
+
 </main>
+
+<footer class="bg-[#2E5A43] text-white py-4 w-full text-center mt-16">
+    &copy; {{ date('Y') }} Kuliner Khas Toba
+</footer>
+
+
 
 <!-- Script -->
 <script>
